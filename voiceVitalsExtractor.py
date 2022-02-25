@@ -72,6 +72,7 @@ class OpenSmileExtractor(Extractor):
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, filename)
 
         # 3. store as preview
+        # Do all the data viz stuff here
         pyclowder.files.upload_preview(connector, host, secret_key, file_id, filename)
 
 if __name__ == "__main__":

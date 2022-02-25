@@ -15,6 +15,7 @@ RUN pip3 install -r requirements.txt
 COPY voiceVitalsExtractor.py extractor_info.json /home/clowder/
 
 # Command to be run when container is run
+# Can add heartbeat to change the refresh rate
 CMD python3 voiceVitalsExtractor.py
 
 ENV MAIN_SCRIPT="voiceVitalsExtractor.py"
