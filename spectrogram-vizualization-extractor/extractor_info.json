@@ -1,0 +1,34 @@
+{
+    "@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
+    "name": "ncsa.SpectrogramVizExtractor",
+    "version": "2.0",
+    "description": "Audio feature extractor and spectrogram plotter for Voice Vitals Project",
+    "author": "Bagla, Harshit <hbagla2@illinois.edu>",
+    "contributors": ["Pietrowicz, Mary B <marybp@illinois.edu>"],
+    "contexts": [
+        {
+
+        }
+    ],
+    "repository": [
+        {
+            "repType": "git",
+            "repUrl": "https://github.com/HarshitBagla/voice-vitals-extractor.git"
+        }
+    ],
+    "process": {
+        "file": [
+            "audio/*"
+        ]
+    },
+    "external_services": [],
+    "dependencies": [
+        "opensmile",
+        "seaborn",
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "scipy"
+    ],
+    "bibtex": []
+}
