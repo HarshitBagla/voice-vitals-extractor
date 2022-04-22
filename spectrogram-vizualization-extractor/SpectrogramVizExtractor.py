@@ -15,7 +15,7 @@ import scipy.io.wavfile as wavfile
 import pylab
 
 
-class OpenSmileExtractor(Extractor):
+class SpectrogramVizExtractor(Extractor):
     """Count the number of characters, words and lines in a text file."""
     def __init__(self):
         Extractor.__init__(self)
@@ -77,52 +77,37 @@ class OpenSmileExtractor(Extractor):
         dataset_id = resource['parent'].get('id')
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, filename)
 
-        # # 3. store as preview
-        # # Do all the data viz stuff here
-        # Fs, aud = wavfile.read(inputfile)
-        # # powerSpectrum, frequenciesFound, trim, imageAxis = plt.specgram(aud, Fs=Fs)
+        # 3. store as preview
+        # Do all the data viz stuff here
+        Fs, aud = wavfile.read(inputfile)
+        # powerSpectrum, frequenciesFound, trim, imageAxis = plt.specgram(aud, Fs=Fs)
         
-        # # Builting the spectrogram
-        # NFFT = int(Fs*0.005)  # 5ms window
-        # noverlap = int(Fs*0.0025)
-        # pylab.specgram(aud, NFFT=NFFT, Fs=Fs, noverlap=noverlap)
-        # pylab.colorbar()
+        # Builting the spectrogram
+        NFFT = int(Fs*0.005)  # 5ms window
+        noverlap = int(Fs*0.0025)
+        pylab.specgram(aud, NFFT=NFFT, Fs=Fs, noverlap=noverlap)
+        pylab.colorbar()
         
-        # # Making the 2000 Hz Spectrogram
-        # preview_filename_2000 = os.path.splitext(original_filename)[0] + "_specgram2000.png"
-        # pylab.ylim(0, 2000)
-        # pylab.savefig(preview_filename_2000)
-        # pyclowder.files.upload_preview(connector, host, secret_key, file_id, preview_filename_2000)
+        # Making the 2000 Hz Spectrogram
+        preview_filename_2000 = os.path.splitext(original_filename)[0] + "_specgram2000.png"
+        pylab.ylim(0, 2000)
+        pylab.savefig(preview_filename_2000)
+        pyclowder.files.upload_preview(connector, host, secret_key, file_id, preview_filename_2000)
         
-        # # Making the 4000 Hz Spectrogram
-        # preview_filename_4000 = os.path.splitext(original_filename)[0] + "_specgram4000.png"
-        # pylab.ylim(0, 4000)
-        # pylab.savefig(preview_filename_4000)
-        # pyclowder.files.upload_preview(connector, host, secret_key, file_id, preview_filename_4000)
+        # Making the 4000 Hz Spectrogram
+        preview_filename_4000 = os.path.splitext(original_filename)[0] + "_specgram4000.png"
+        pylab.ylim(0, 4000)
+        pylab.savefig(preview_filename_4000)
+        pyclowder.files.upload_preview(connector, host, secret_key, file_id, preview_filename_4000)
         
-        # # Making the 6000 Hz Spectrogram
-        # preview_filename_6000 = os.path.splitext(original_filename)[0] + "_specgram6000.png"
-        # pylab.ylim(0, 6000)
-        # pylab.savefig(preview_filename_6000)
-        # pyclowder.files.upload_preview(connector, host, secret_key, file_id, preview_filename_6000)
+        # Making the 6000 Hz Spectrogram
+        preview_filename_6000 = os.path.splitext(original_filename)[0] + "_specgram6000.png"
+        pylab.ylim(0, 6000)
+        pylab.savefig(preview_filename_6000)
+        pyclowder.files.upload_preview(connector, host, secret_key, file_id, preview_filename_6000)
         
-        # Making the corr Matrix after every file upload
-        files_in_dataset = pyclowder.datasets.get_file_list(connector, host, secret_key, dataset_id)
-        csvfiles_df = pd.DataFrame()
-        for file in files_in_dataset:
-            file_id = file["id"]
-            if ".csv" not in file["filename"]:
-                continue
-            curr_csvFile = pyclowder.files.download(connector, host, secret_key, file_id, intermediatefileid=None, ext="csv")
-            pd_currcsvFile = pd.read_csv(curr_csvFile)
-            csvfiles_df = csvfiles_df.append(pd_currcsvFile)
-        temp_dfDisplay = csvfiles_df.iloc[:, :20]
-        corrMat = temp_dfDisplay.corr()
-        corrMat_fileName = './corrMat.csv'
-        corrMat.to_csv(corrMat_fileName)
-        pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, corrMat_fileName)
         
 
 if __name__ == "__main__":
-    extractor = OpenSmileExtractor()
+    extractor = SpectrogramVizExtractor()
     extractor.start()
