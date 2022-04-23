@@ -1,7 +1,7 @@
 {
     "@context": "http://clowder.ncsa.illinois.edu/contexts/extractors.jsonld",
     "name": "ncsa.CorrMatrixExtractor",
-    "version": "2.1",
+    "version": "2.2",
     "description": "Audio feature extractor and spectrogram plotter for Voice Vitals Project",
     "author": "Bagla, Harshit <hbagla2@illinois.edu>",
     "contributors": ["Pietrowicz, Mary B <marybp@illinois.edu>", "Wang, Chen <cwang138@illinois.edu>"],
@@ -23,6 +23,7 @@
     },
     "external_services": [],
     "dependencies": [
+        "opensmile",
         "numpy",
         "pandas",
         "matplotlib",

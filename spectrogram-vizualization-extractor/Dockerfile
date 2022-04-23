@@ -4,9 +4,9 @@ FROM python:3
 # Creating workdir
 WORKDIR /home/clowder
 
-# RUN + any shell command
-RUN apt-get -qq -y update && apt-get install -qq -y libsndfile-dev sox
-# RUN apt-get install ffmpeg
+# # RUN + any shell command
+# RUN apt-get -qq -y update && apt-get install -qq -y libsndfile-dev sox
+# # RUN apt-get install ffmpeg
 
 # Install pyClowder and any other python dependencies
 COPY requirements.txt .
