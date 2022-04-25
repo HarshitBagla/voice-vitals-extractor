@@ -25,18 +25,10 @@ class CorrMatrixExtractor(Extractor):
         logging.getLogger('__main__').setLevel(logging.DEBUG)
 
     def process_message(self, connector, host, secret_key, resource, parameters):
-        # Process the file and upload the results
+        # this extractor runs on dataset
         # uncomment to see the resource
-        print(resource)
-
         logger = logging.getLogger(__name__)
-
-        # get the input file name and check if it's correlation matrix itself; then skip
-        trigger_file_name = resource["name"]
-        if trigger_file_name == 'corrMat.csv':
-            return
-
-        dataset_id = resource['parent'].get('id')
+        dataset_id = resource['id']
 
         # These process messages will appear in the Clowder UI under Extractions.
         connector.message_process(resource, "Loading contents of file...")
@@ -46,7 +38,7 @@ class CorrMatrixExtractor(Extractor):
         # Making the corr Matrix once it reaches the num of files
         feature_files_in_dataset = [file for file in files_in_dataset if file["filename"].endswith("_summary.csv")]
         logger.debug("feature files number: " + str(len(feature_files_in_dataset)))
-        if len(feature_files_in_dataset) >= self.args.num and len(feature_files_in_dataset) % self.args.num == 0:
+        if len(feature_files_in_dataset) >= self.args.num:
             for file in feature_files_in_dataset:
                 file_id = file["id"]
                 curr_csvFile = pyclowder.files.download(connector, host, secret_key, file_id,
