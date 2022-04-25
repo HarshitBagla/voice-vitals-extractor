@@ -46,11 +46,20 @@ class CorrMatrixExtractor(Extractor):
                 pd_currcsvFile = pd.read_csv(curr_csvFile)
                 csvfiles_df = pd.concat([csvfiles_df, pd_currcsvFile]).apply(pd.to_numeric)
 
-            temp_dfDisplay = csvfiles_df.iloc[:, :20]
-            # logger.debug(temp_dfDisplay.head(5))
+            aggregated_features = csvfiles_df.iloc[:, :20]
+            # logger.debug(aggregated_features.head(5))
 
-            corrMat = temp_dfDisplay.corr()
+            corrMat = aggregated_features.corr()
             # logger.debug(corrMat.head())
+
+            # overwrite existing aggregated features
+            features_file_name = 'aggregatedFeatures.csv'
+            for file in files_in_dataset:
+                if file["filename"] == features_file_name:
+                    url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
+                    connector.delete(url, verify=connector.ssl_verify if connector else True)
+            aggregated_features.to_csv(features_file_name)
+            pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, aggregated_features)
 
             # overwrite existing correlation matrix
             corrMat_file_name = 'corrMat.csv'
