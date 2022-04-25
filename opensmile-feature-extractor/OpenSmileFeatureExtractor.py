@@ -65,9 +65,14 @@ class OpenSmileFeatureExtractor(Extractor):
         # Upload metadata to original file
         pyclowder.files.upload_metadata(connector, host, secret_key, file_id, metadata)
 
-        # 2. store table as new file and upload
+        # 2. store table as new file and upload; note remove duplicate
         original_filename = resource["name"]
         filename = os.path.splitext(original_filename)[0] + "_summary.csv"
+        files_in_dataset = pyclowder.datasets.get_file_list(connector, host, secret_key, dataset_id)
+        for file in files_in_dataset:
+            if file["filename"] == filename:
+                url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
+                connector.delete(url, verify=connector.ssl_verify if connector else True)
         y.to_csv(filename, index=False)
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, filename)
 

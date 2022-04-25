@@ -27,13 +27,13 @@ class CorrMatrixExtractor(Extractor):
     def process_message(self, connector, host, secret_key, resource, parameters):
         # Process the file and upload the results
         # uncomment to see the resource
-        # print(resource)
+        print(resource)
 
         logger = logging.getLogger(__name__)
 
         # get the input file name and check if it's correlation matrix itself; then skip
         trigger_file_name = resource["name"]
-        if trigger_file_name != 'corrMat.csv':
+        if trigger_file_name == 'corrMat.csv':
             return
 
         dataset_id = resource['parent'].get('id')

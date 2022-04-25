@@ -17,9 +17,7 @@
         }
     ],
     "process": {
-        "file": [
-            "text/csv"
-        ]
+        "dataset-mannual": []
     },
     "external_services": [],
     "dependencies": [

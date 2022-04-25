@@ -13,6 +13,6 @@ COPY CorrMatrixExtractor.py extractor_info.json /home/clowder/
 
 # Command to be run when container is run
 # Can add heartbeat to change the refresh rate
-CMD python3 CorrMatrixExtractor.py --heartbeat 40
+CMD python3 CorrMatrixExtractor.py --heartbeat 40 --num 2
 
 ENV MAIN_SCRIPT="CorrMatrixExtractor.py"
