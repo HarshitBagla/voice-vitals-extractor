@@ -6,6 +6,8 @@ import logging
 from pyclowder.extractors import Extractor
 import pyclowder.files
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 class CorrMatrixExtractor(Extractor):
@@ -59,7 +61,7 @@ class CorrMatrixExtractor(Extractor):
                     url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
                     connector.delete(url, verify=connector.ssl_verify if connector else True)
             aggregated_features.to_csv(features_file_name)
-            pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, aggregated_features)
+            pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, features_file_name)
 
             # overwrite existing correlation matrix
             corrMat_file_name = 'corrMat.csv'
@@ -68,7 +70,15 @@ class CorrMatrixExtractor(Extractor):
                     url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
                     connector.delete(url, verify=connector.ssl_verify if connector else True)
             corrMat.to_csv(corrMat_file_name)
-            pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, corrMat_file_name)
+            corrMat_file_id = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id,
+                                                                corrMat_file_name)
+
+            # plot correlation matrix and attach to preview
+            preview_filename_corr = "corrMat_heatmap.png"
+            matrix = corrMat.round(2)
+            sns.heatmap(matrix, annot=True)
+            plt.savefig(preview_filename_corr)
+            pyclowder.files.upload_preview(connector, host, secret_key, corrMat_file_id, preview_filename_corr)
 
 
 if __name__ == "__main__":
