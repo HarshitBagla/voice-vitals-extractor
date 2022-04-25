@@ -76,6 +76,8 @@ class CorrMatrixExtractor(Extractor):
             # plot correlation matrix and attach to preview
             preview_filename_corr = "corrMat_heatmap.png"
             matrix = corrMat.round(2)
+            plt.cla()
+            sns.set(rc={'figure.figsize': (20, 15)})
             sns.heatmap(matrix, annot=True)
             plt.savefig(preview_filename_corr)
             pyclowder.files.upload_preview(connector, host, secret_key, corrMat_file_id, preview_filename_corr)
