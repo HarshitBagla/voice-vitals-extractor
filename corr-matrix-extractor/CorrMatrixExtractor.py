@@ -78,7 +78,7 @@ class CorrMatrixExtractor(Extractor):
             matrix = corrMat.round(2)
             plt.cla()
             sns.set(rc={'figure.figsize': (20, 15)})
-            sns.heatmap(matrix, annot=True)
+            sns.heatmap(matrix, annot=False)
             plt.savefig(preview_filename_corr)
             pyclowder.files.upload_preview(connector, host, secret_key, corrMat_file_id, preview_filename_corr)
 
