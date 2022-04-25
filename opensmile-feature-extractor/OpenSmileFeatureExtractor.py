@@ -7,13 +7,9 @@ import os
 from pyclowder.extractors import Extractor
 import pyclowder.files
 import opensmile
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 
 
-
-class CorrMatrixExtractor(Extractor):
+class OpenSmileFeatureExtractor(Extractor):
     """Count the number of characters, words and lines in a text file."""
     def __init__(self):
         Extractor.__init__(self)
@@ -35,11 +31,8 @@ class CorrMatrixExtractor(Extractor):
         # print(resource)
 
         logger = logging.getLogger(__name__)
-<<<<<<< HEAD
-=======
         inputfile = resource["local_paths"][0]
         file_id = resource['id']
->>>>>>> main
         dataset_id = resource['parent'].get('id')
 
         # These process messages will appear in the Clowder UI under Extractions.
@@ -67,7 +60,7 @@ class CorrMatrixExtractor(Extractor):
         metadata = self.get_metadata(result, 'file', file_id, host)
 
         # Normal logs will appear in the extractor log, but NOT in the Clowder UI.
-        logger.debug(metadata)
+        # logger.debug(metadata)
 
         # Upload metadata to original file
         pyclowder.files.upload_metadata(connector, host, secret_key, file_id, metadata)
@@ -78,31 +71,8 @@ class CorrMatrixExtractor(Extractor):
         y.to_csv(filename, index=False)
         dataset_id = resource['parent'].get('id')
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, filename)
-        
-        # Making the corr Matrix after every file upload
-        files_in_dataset = pyclowder.datasets.get_file_list(connector, host, secret_key, dataset_id)
-        csvfiles_df = pd.DataFrame()
-        for file in files_in_dataset:
-            file_id = file["id"]
-            # Read only csv types
-            if ".csv" in file["filename"]:
-                # overwrite corrMat
-                if file["filename"] == 'corrMat.csv':
-                    url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
-                    connector.delete(url, verify=connector.ssl_verify if connector else True)
-                else:
-                    curr_csvFile = pyclowder.files.download(connector, host, secret_key, file_id, intermediatefileid=None, ext="csv")
-                    pd_currcsvFile = pd.read_csv(curr_csvFile)
-                    csvfiles_df = pd.concat([csvfiles_df, pd_currcsvFile]).apply(pd.to_numeric)
-        temp_dfDisplay = csvfiles_df.iloc[:, :20]
-        # logger.debug(temp_dfDisplay.head(5))
-        corrMat = temp_dfDisplay.corr()
-        # logger.debug(corrMat.head())
-        corrMat_fileName = 'corrMat.csv'
-        corrMat.to_csv(corrMat_fileName)
-        pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, corrMat_fileName)
-        
+
 
 if __name__ == "__main__":
-    extractor = CorrMatrixExtractor()
+    extractor = OpenSmileFeatureExtractor()
     extractor.start()

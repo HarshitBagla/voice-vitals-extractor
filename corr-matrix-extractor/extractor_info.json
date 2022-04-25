@@ -23,6 +23,7 @@
     },
     "external_services": [],
     "dependencies": [
+        "opensmile",
         "numpy",
         "pandas",
         "matplotlib",
