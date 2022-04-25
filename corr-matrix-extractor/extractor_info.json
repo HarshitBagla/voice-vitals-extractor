@@ -18,7 +18,7 @@
     ],
     "process": {
         "file": [
-            "audio/*"
+            "text/csv"
         ]
     },
     "external_services": [],

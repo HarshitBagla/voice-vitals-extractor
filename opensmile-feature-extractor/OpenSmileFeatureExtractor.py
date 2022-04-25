@@ -69,7 +69,6 @@ class OpenSmileFeatureExtractor(Extractor):
         original_filename = resource["name"]
         filename = os.path.splitext(original_filename)[0] + "_summary.csv"
         y.to_csv(filename, index=False)
-        dataset_id = resource['parent'].get('id')
         pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, filename)
 
 
