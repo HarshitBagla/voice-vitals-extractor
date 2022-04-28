@@ -6,10 +6,6 @@ import logging
 import os
 from pyclowder.extractors import Extractor
 import pyclowder.files
-import seaborn
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import scipy.io.wavfile as wavfile
 import pylab
 

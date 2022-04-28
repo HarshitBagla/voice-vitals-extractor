@@ -1,0 +1,2 @@
+opensmile
+pyclowder>=2.4.1

@@ -3,14 +3,11 @@
 """Example extractor based on the clowder code."""
 
 import logging
-import os
 from pyclowder.extractors import Extractor
 import pyclowder.files
-import opensmile
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 
 
 class CorrMatrixExtractor(Extractor):
@@ -19,8 +16,8 @@ class CorrMatrixExtractor(Extractor):
         Extractor.__init__(self)
 
         # add any additional arguments to parser
-        # self.parser.add_argument('--max', '-m', type=int, nargs='?', default=-1,
-        #                          help='maximum number (default=-1)')
+        self.parser.add_argument('--num', '-n', type=int, nargs='?', default=2,
+                                 help='number of feature files to start compute correlation (default=2)')
 
         # parse command line and load default logging configuration
         self.setup()
@@ -30,76 +27,61 @@ class CorrMatrixExtractor(Extractor):
         logging.getLogger('__main__').setLevel(logging.DEBUG)
 
     def process_message(self, connector, host, secret_key, resource, parameters):
-        # Process the file and upload the results
+        # this extractor runs on dataset
         # uncomment to see the resource
-        # print(resource)
-
         logger = logging.getLogger(__name__)
-        inputfile = resource["local_paths"][0]
-        file_id = resource['id']
-        dataset_id = resource['parent'].get('id')
+        dataset_id = resource['id']
 
         # These process messages will appear in the Clowder UI under Extractions.
         connector.message_process(resource, "Loading contents of file...")
-        
-        # Call actual program
-        # Execute word count command on the input file and obtain the output
-        smile = opensmile.Smile(
-            feature_set=opensmile.FeatureSet.ComParE_2016,
-            feature_level=opensmile.FeatureLevel.Functionals,
-        )
-
-        # 1. Create metadata dictionary
-        y = smile.process_file(inputfile)
-
-        m = y.to_dict('records')[0]
-        result = {
-            'audspec_lengthL1norm_sma_range': m['audspec_lengthL1norm_sma_range'],
-            'audspec_lengthL1norm_sma_maxPos': m['audspec_lengthL1norm_sma_maxPos'],
-            'audspec_lengthL1norm_sma_minPos': m['audspec_lengthL1norm_sma_minPos']
-        }
-        # connector.message_process(resource, "Found %s lines and %s words..." % (lines, words))
-
-        # Store results as metadata
-        metadata = self.get_metadata(result, 'file', file_id, host)
-
-        # Normal logs will appear in the extractor log, but NOT in the Clowder UI.
-        logger.debug(metadata)
-
-        # Upload metadata to original file
-        pyclowder.files.upload_metadata(connector, host, secret_key, file_id, metadata)
-
-        # 2. store table as new file and upload
-        original_filename = resource["name"]
-        filename = os.path.splitext(original_filename)[0] + "_summary.csv"
-        y.to_csv(filename, index=False)
-        dataset_id = resource['parent'].get('id')
-        pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, filename)
-        
-        # Making the corr Matrix after every file upload
         files_in_dataset = pyclowder.datasets.get_file_list(connector, host, secret_key, dataset_id)
         csvfiles_df = pd.DataFrame()
-        for file in files_in_dataset:
-            file_id = file["id"]
-            # Remove the already existing corr Matrix
-            if file["filename"] == 'corrMat.csv':
-                print("here")
-                url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
-                connector.delete(url, verify=connector.ssl_verify if connector else True)
-                continue
-            # Read only csv types
-            if ".csv" not in file["filename"]:
-                continue
-            print("Downloading this file: " + file['filename'])
-            curr_csvFile = pyclowder.files.download(connector, host, secret_key, file_id, intermediatefileid=None, ext="csv")
-            pd_currcsvFile = pd.read_csv(curr_csvFile)
-            csvfiles_df = csvfiles_df.append(pd_currcsvFile)
-        temp_dfDisplay = csvfiles_df.iloc[:, :20]
-        corrMat = temp_dfDisplay.corr()
-        corrMat_fileName = './corrMat.csv'
-        corrMat.to_csv(corrMat_fileName)
-        pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, corrMat_fileName)
-        
+
+        # Making the corr Matrix once it reaches the num of files
+        feature_files_in_dataset = [file for file in files_in_dataset if file["filename"].endswith("_summary.csv")]
+        logger.debug("feature files number: " + str(len(feature_files_in_dataset)))
+        if len(feature_files_in_dataset) >= self.args.num:
+            for file in feature_files_in_dataset:
+                file_id = file["id"]
+                curr_csvFile = pyclowder.files.download(connector, host, secret_key, file_id,
+                                                        intermediatefileid=None, ext="csv")
+                pd_currcsvFile = pd.read_csv(curr_csvFile)
+                csvfiles_df = pd.concat([csvfiles_df, pd_currcsvFile]).apply(pd.to_numeric)
+
+            aggregated_features = csvfiles_df.iloc[:, :20]
+            # logger.debug(aggregated_features.head(5))
+
+            corrMat = aggregated_features.corr()
+            # logger.debug(corrMat.head())
+
+            # overwrite existing aggregated features
+            features_file_name = 'aggregatedFeatures.csv'
+            for file in files_in_dataset:
+                if file["filename"] == features_file_name:
+                    url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
+                    connector.delete(url, verify=connector.ssl_verify if connector else True)
+            aggregated_features.to_csv(features_file_name)
+            pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id, features_file_name)
+
+            # overwrite existing correlation matrix
+            corrMat_file_name = 'corrMat.csv'
+            for file in files_in_dataset:
+                if file["filename"] == corrMat_file_name:
+                    url = '%sapi/files/%s?key=%s' % (host, file["id"], secret_key)
+                    connector.delete(url, verify=connector.ssl_verify if connector else True)
+            corrMat.to_csv(corrMat_file_name)
+            corrMat_file_id = pyclowder.files.upload_to_dataset(connector, host, secret_key, dataset_id,
+                                                                corrMat_file_name)
+
+            # plot correlation matrix and attach to preview
+            preview_filename_corr = "corrMat_heatmap.png"
+            matrix = corrMat.round(2)
+            plt.cla()
+            sns.set(rc={'figure.figsize': (20, 15)})
+            sns.heatmap(matrix, annot=False)
+            plt.savefig(preview_filename_corr)
+            pyclowder.files.upload_preview(connector, host, secret_key, corrMat_file_id, preview_filename_corr)
+
 
 if __name__ == "__main__":
     extractor = CorrMatrixExtractor()
